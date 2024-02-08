@@ -1,3 +1,8 @@
+// ParseAccountPosting
+// Author: Pierre Oosthuizen
+// Created: 06 February 2024
+// Version: 1.1
+// Updated: 08 February 2024
 
 const tAccountsWorksheetName = "t_accounts";
 
@@ -17,28 +22,29 @@ const tAccountPrefix: string = "account_";
 const firstColumn = "B";
 const secondColumn = "I";
 const thirdColumn = "P";
-const startingRow = 1
+const startingRow = 5
 const rowsSkipped = 5;
 
-const sortField: ExcelScript.SortField = {key: 1, ascending: true};
+const sortField1: ExcelScript.SortField = { key: 1, ascending: true }; 
+const sortField2: ExcelScript.SortField = { key: 0, ascending: true };
 
 class Posting {
 
-  postingId: number;
-  transferId: number;
+  postingId: string;
+  transferId: string;
 
   debitAccount: string;
   creditAccount: string;
 
-  effective_date: Date;
+  effective_date: string;
 
   eventType: string;
   postingType: string;
 
-  amount: number;
+  amount: string;
   currency: string;
 
-  constructor(postingId, transferId, debitAccount, creditAccount, effectiveDate, eventType, postingType, amount, currency) {
+  constructor(postingId: string, transferId: string, debitAccount:string, creditAccount:string, effectiveDate: string, eventType: string, postingType: string, amount: string, currency: string) {
 
     this.postingId = postingId;
     this.transferId = transferId;
@@ -282,9 +288,8 @@ function createTAccounts(workbook: ExcelScript.Workbook, accounts: (string | num
 
   // Determine the column layout of the t-accounts
   let numberOfColumns = calculateNumberOfColumns(accounts.length);
-  console.log(numberOfColumns);
   let firstColumnCount = Math.ceil(accounts.length / numberOfColumns);
-  let furtherColumnCount = Math.floor(accounts.length - firstColumnCount);
+  let furtherColumnCount = Math.floor((accounts.length - firstColumnCount) / (numberOfColumns - 1));
   console.log("Adding " + firstColumnCount + " accounts to first column and " + furtherColumnCount + " accounts for subsequent columns.");
 
   // Create headers for the first column.
@@ -315,11 +320,10 @@ function createTAccounts(workbook: ExcelScript.Workbook, accounts: (string | num
   if (numberOfColumns == 3) {
     console.log("Creating t-accounts for column 3.");
     var currentRow = startingRow;
-    for (let index = 0; index < furtherColumnCount; index++) {
+    for (let index = furtherColumnCount * 2; index < accounts.length; index++) {
       let range = worksheet.getRange(thirdColumn + currentRow + ":" + thirdColumn + currentRow);
-      range.setValue(accounts[index][0] + " - " + accounts[index][1]);
-      let tableHeader = accounts[index][1].toString();
-      let trimmedHeader = tableHeader.substring(27);
+      range.setValue(accounts[index][0] + " - " + accounts[index][1].toString());
+      createTable(worksheet, thirdColumn, currentRow + 1, accounts[index][0].toString());
       currentRow += rowsSkipped;
     }
   } else {
@@ -339,20 +343,18 @@ function parsePostings(workbook: ExcelScript.Workbook): Posting[] {
   let postings: Posting[] = [];
 
   rows.forEach((row) => {
-    console.log("Parsing row: " + row);
     let newPosting = new Posting(
-      row[0],   // postingId 
-      row[4],   // transferId
-      row[8],   // debitAccount
-      row[11],  // creditAccount
-      row[6],   // effectiveDate
-      row[1],   // postingType
-      row[2],   // eventType
-      row[3],   // amount
+      row[0].toString(),   // postingId 
+      row[4].toString(),   // transferId
+      row[8].toString(),   // debitAccount
+      row[11].toString(),  // creditAccount
+      row[6].toString(),   // effectiveDate
+      row[1].toString(),   // postingType
+      row[2].toString(),   // eventType
+      row[3].toString(),   // amount
       "ZAR"     // currency
     )
     postings.push(newPosting);
-    console.log("Identified " + postings.length + " postings...");
   });
 
   console.log("Returning " + postings.length + " postings...");
@@ -417,7 +419,7 @@ function populateTAccounts(workbook: ExcelScript.Workbook, postings: Posting[]) 
     ]
     debitTable.addRow(-1, debitPosting);
     debitTable.getRangeBetweenHeaderAndTotal().getFormat().autofitColumns;
-    debitTable.getSort().apply([sortField]);
+    debitTable.getSort().apply([sortField1, sortField2]);
 
     // Create the credit posting
     let creditPosting: (string | number | boolean)[] = [
@@ -430,7 +432,7 @@ function populateTAccounts(workbook: ExcelScript.Workbook, postings: Posting[]) 
     ]
     creditTable.addRow(-1, creditPosting);
     creditTable.getRangeBetweenHeaderAndTotal().getFormat().autofitColumns;
-    creditTable.getSort().apply([sortField]);
+    creditTable.getSort().apply([sortField1, sortField2]);
     
 
     console.log("Populated t-accounts with posting " + posting.postingId.toString() + ".");
