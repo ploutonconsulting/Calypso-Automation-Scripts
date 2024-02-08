@@ -37,3 +37,6 @@ The script will execute and process the following:
 
 For any questions, comments or bugs please contact me on pierre.oosthuizen@ploutonconsulting.com
 
+## Fixes and updates
+- **1.1 (20240208):** Fixed issue where the tables in column 3 is not updating with Excel tables, just headers.
+  
