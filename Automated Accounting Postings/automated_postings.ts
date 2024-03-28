@@ -58,7 +58,7 @@ class Posting {
   }
 
   getPostingDetails(): (string|number|boolean)[] {
-    return [this.postingId, this.effective_date.toString(), this.eventType, this.amount];
+    return [this.postingId, this.effective_date, this.eventType, this.amount];
   }
 
   getDebitAccount(): string {
@@ -230,7 +230,7 @@ function createTable(worksheet: ExcelScript.Worksheet, column: string, row: numb
 
   // Set the date formats
   let dateColumn = table.getColumnByName(tAccountColumns[1]);
-  dateColumn.getRange().setNumberFormat("YYYY-MM-DD");
+  // dateColumn.getRange().setNumberFormat("YYYYMMDD");
 }
 
 /**
@@ -283,7 +283,9 @@ function createTAccounts(workbook: ExcelScript.Workbook, accounts: (string | num
   // Clear the worksheet before starting to add new content
   deleteTables(worksheet);
   let worksheetRange = worksheet.getUsedRange();
-  worksheetRange.clear(ExcelScript.ClearApplyTo.all);
+  if (worksheetRange) {
+    worksheetRange.clear(ExcelScript.ClearApplyTo.all);
+  }
 
 
   // Determine the column layout of the t-accounts
@@ -411,7 +413,7 @@ function populateTAccounts(workbook: ExcelScript.Workbook, postings: Posting[]) 
     // Create the debit posting
     let debitPosting: (string|number|boolean)[] = [
       posting.postingId,
-      posting.effective_date.toString(),
+      posting.effective_date,
       posting.postingType,
       posting.eventType,
       posting.amount,
@@ -424,7 +426,7 @@ function populateTAccounts(workbook: ExcelScript.Workbook, postings: Posting[]) 
     // Create the credit posting
     let creditPosting: (string | number | boolean)[] = [
       posting.postingId,
-      posting.effective_date.toString(),
+      posting.effective_date,
       posting.postingType,
       posting.eventType,
       "",
