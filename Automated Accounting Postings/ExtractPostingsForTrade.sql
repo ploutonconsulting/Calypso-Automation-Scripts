@@ -1,7 +1,3 @@
-BEGIN
-	:trade_id := '&1';	-- Request the DATE FROM the USER
-END
-
 SELECT 
 	bp.BO_POSTING_ID, 
 	bp.POSTING_TYPE, 
